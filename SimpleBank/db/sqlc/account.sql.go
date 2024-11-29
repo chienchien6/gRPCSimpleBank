@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+
 )
 
 const createAccount = `-- name: CreateAccount :one
@@ -34,6 +35,53 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 		&i.Owner,
 		&i.Balance,
 		&i.Currency,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const createEntry = `-- name: CreateEntry :one
+INSERT INTO entries (
+  account_id,
+  amount
+) VALUES (
+  $1, $2
+) RETURNING id, account_id, amount, created_at
+`
+
+
+func (q *Queries) CreateEntry(ctx context.Context, arg CreateEntryParams) (Entry, error) {
+	row := q.db.QueryRowContext(ctx, createEntry, arg.AccountID, arg.Amount)
+	var i Entry
+	err := row.Scan(
+		&i.ID,
+		&i.AccountID,
+		&i.Amount,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const createTransfer = `-- name: CreateTransfer :one
+INSERT INTO transfers (
+  from_account_id,
+  to_account_id,
+  amount
+) VALUES (
+  $1, $2, $3
+) RETURNING id, from_account_id, to_account_id, amount, created_at
+`
+
+// Duplicate declaration removed
+
+func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error) {
+	row := q.db.QueryRowContext(ctx, createTransfer, arg.FromAccountID, arg.ToAccountID, arg.Amount)
+	var i Transfer
+	err := row.Scan(
+		&i.ID,
+		&i.FromAccountID,
+		&i.ToAccountID,
+		&i.Amount,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -85,7 +133,7 @@ func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]A
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Account
+	items := []Account{}
 	for rows.Next() {
 		var i Account
 		if err := rows.Scan(

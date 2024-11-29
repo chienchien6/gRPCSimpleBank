@@ -8,15 +8,15 @@ import (
 
 // Store provides all function to execute db queries and transactions
 type Store struct {
-	db      *sql.DB
-	queries *Queries
+	db *sql.DB
+	*Queries
 }
 
 // NewStore creates a new Store
 func NewStore(db *sql.DB) *Store {
 	return &Store{
 		db:      db,
-		queries: New(db),
+		Queries: New(db),
 	}
 }
 

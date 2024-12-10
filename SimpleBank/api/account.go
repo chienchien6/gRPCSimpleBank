@@ -10,9 +10,10 @@ import (
 
 type CreateAccountRequest struct {
 	Owner    string `json:"owner" binding:"required"`
-	Currency string `json:"currency" binding:"required,oneof=USD EUR"`
+	Currency string `json:"currency" binding:"required,oneof=USD EUR"` //validation
 }
 
+// 創建帳戶的處理函數
 func (server *Server) createAccount(ctx *gin.Context) {
 	var req CreateAccountRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -20,21 +21,18 @@ func (server *Server) createAccount(ctx *gin.Context) {
 		return
 	}
 
+	// 創建帳戶邏輯
 	account, err := server.store.CreateAccount(ctx, db.CreateAccountParams{
 		Owner:    req.Owner,
 		Balance:  0,
 		Currency: req.Currency,
 	})
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err)) //已在相同package的server.go定義errorResponse
 		return
 	}
 
 	ctx.JSON(http.StatusOK, account)
-}
-
-func errorResponse(err error) gin.H {
-	return gin.H{"error": err.Error()}
 }
 
 type getAccountRequest struct {

@@ -6,7 +6,11 @@ import (
 	"fmt"
 )
 
-// Store provides all function to execute db queries and transactions
+//type Store interface {
+//
+//}
+
+// SQLStoreprovides all function to execute db queries and transactions
 type Store struct {
 	db *sql.DB
 	*Queries

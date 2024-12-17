@@ -1,6 +1,8 @@
 package api
 
 import (
+	"database/sql"
+	"fmt"
 	db "github.com/GRPCgRPCBank/SimpleBank/db/sqlc"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -21,16 +23,46 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 		return
 	}
 
+	if !server.validAccount(ctx, req.FromAccountID, req.Currency) {
+		return
+	}
+
+	if !server.validAccount(ctx, req.ToAccountID, req.Currency) {
+		return
+	}
+
+	arg := db.TransferTxParams{
+		FromAccountID: req.FromAccountID,
+		ToAccountID:   req.ToAccountID,
+		Amount:        req.Amount,
+	}
+
 	// 創建帳戶邏輯
-	account, err := server.store.CreateAccount(ctx, db.CreateAccountParams{
-		Owner:    req.Owner,
-		Balance:  0,
-		Currency: req.Currency,
-	})
+	result, err := server.store.TransferTx(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err)) //已在相同package的server.go定義errorResponse
 		return
 	}
 
-	ctx.JSON(http.StatusOK, account)
+	ctx.JSON(http.StatusOK, result)
+}
+
+func (Server *Server) validAccount(ctx *gin.Context, accountID int64, currency string) bool {
+	account, err := Server.store.GetAccount(ctx, accountID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return false
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return false
+	}
+
+	if account.Currency != currency {
+		err := fmt.Errorf("account [%d] currency mismatch: %s vs %s", account.ID, account.Currency, currency)
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return false
+	}
+
+	return true
 }

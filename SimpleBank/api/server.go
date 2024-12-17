@@ -7,12 +7,12 @@ import (
 
 // Server 結構用於處理所有 HTTP 請求
 type Server struct {
-	store  *db.Store
+	store  db.Store
 	router *gin.Engine
 }
 
 // NewServer 創建一個新的 Server 實例
-func NewServer(store *db.Store) *Server {
+func NewServer(store db.Store) *Server {
 	server := &Server{store: store} //store：這是一個資料庫存取的介面，通常用來與資料庫進行交互。
 	router := gin.Default()         // 初始化 Gin 路由
 

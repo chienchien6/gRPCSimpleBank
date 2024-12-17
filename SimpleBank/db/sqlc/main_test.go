@@ -17,9 +17,8 @@ const (
 var testQueries *Queries
 var testDB *sql.DB
 
-var err error
-
 func TestMain(m *testing.M) {
+	var err error
 	testDB, err = sql.Open(dbDriver, dbSource)
 	if err != nil {
 		log.Fatal("comm.sccount to db:", err)

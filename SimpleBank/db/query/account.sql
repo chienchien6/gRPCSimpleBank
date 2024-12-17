@@ -31,19 +31,3 @@ DELETE FROM accounts
 WHERE id = $1;
 
 
--- name: CreateTransfer :one
-INSERT INTO transfers (
-  from_account_id,
-  to_account_id,
-  amount
-) VALUES (
-  $1, $2, $3
-) RETURNING id, from_account_id, to_account_id, amount, created_at;
-
--- name: CreateEntry :one
-INSERT INTO entries (
-  account_id,
-  amount
-) VALUES (
-  $1, $2
-) RETURNING id, account_id, amount, created_at;

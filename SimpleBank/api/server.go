@@ -3,6 +3,8 @@ package api
 import (
 	db "github.com/GRPCgRPCBank/SimpleBank/db/sqlc" // 假設 db 是你的資料庫包
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 )
 
 // Server 結構用於處理所有 HTTP 請求
@@ -15,6 +17,12 @@ type Server struct {
 func NewServer(store db.Store) *Server {
 	server := &Server{store: store} //store：這是一個資料庫存取的介面，通常用來與資料庫進行交互。
 	router := gin.Default()         // 初始化 Gin 路由
+
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("currency", validCurrency)
+	}
+
+	router.POST("/users", server.createUser)
 
 	router.POST("/accounts", server.createAccount)
 	router.GET("/accounts/:id", server.getAccount)

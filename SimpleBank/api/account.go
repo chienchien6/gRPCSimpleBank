@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"github.com/lib/pq"
 	"net/http"
 
 	db "github.com/GRPCgRPCBank/SimpleBank/db/sqlc"
@@ -10,7 +11,7 @@ import (
 
 type CreateAccountRequest struct {
 	Owner    string `json:"owner" binding:"required"`
-	Currency string `json:"currency" binding:"required,oneof=USD EUR"` //validation
+	Currency string `json:"currency" binding:"required,currency"` //validation
 }
 
 // 創建帳戶的處理函數
@@ -28,6 +29,13 @@ func (server *Server) createAccount(ctx *gin.Context) {
 		Currency: req.Currency,
 	})
 	if err != nil {
+		if pgErr, ok := err.(*pq.Error); ok {
+			switch pgErr.Code.Name() {
+			case "foreign_key_violation", "unique_violation":
+				ctx.JSON(http.StatusForbidden, errorResponse(err))
+				return
+			}
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err)) //已在相同package的server.go定義errorResponse
 		return
 	}

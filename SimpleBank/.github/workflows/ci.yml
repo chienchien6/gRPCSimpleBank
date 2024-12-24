@@ -11,10 +11,25 @@ on:
 
 jobs:
 
-  build:
-  name:
-    build:
+  test:
+    name: Test
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pg
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: 123456
+          POSTGRES_DB: simple_bank
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
     - uses: actions/checkout@v4
 
@@ -24,8 +39,8 @@ jobs:
         go-version: '1.23.1'
       id: go
 
-    - name: Test
-      run: make test
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
 
     - name: Install golang-migrate
       run:

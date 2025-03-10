@@ -11,7 +11,7 @@ type Store interface {
 	TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error)
 }
 
-// SQLStoreprovides all function to execute db queries and transactions
+// SQLStoreprovides all function to execute SQL queries and transactions
 type SQLStore struct {
 	db *sql.DB
 	*Queries

@@ -46,6 +46,7 @@ jobs:
       run:
         curl -L https://github.com/golang-migrate/migrate/release/download/v4.12.2/migrate.linux-am
         sudo mv migrate.linux-amd64 /usr/bin/migrate
+        which migrate
 
     - name: Run migrations
       run: make migrateup

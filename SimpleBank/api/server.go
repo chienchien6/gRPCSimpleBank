@@ -42,6 +42,7 @@ func (server *Server) setupRouter() {
 	router := gin.Default() // 初始化 Gin 路由
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.loginUser)
+	router.POST("/tokens/renew_access", server.renewAccessToken)
 
 	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
 
